@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Βρες τους γείτονες</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <script src="countries.js">
+    </script>
+    <script>
+        // Ένας βοηθητικός πίνακας που θα περιέχει τις χώρες από το countries.js σε λίγο πιο βολική μορφή
+       
+        const urlCountry = 'https://restcountries.com/v2/name/';
+        const urlCode = 'https://restcountries.com/v2/alpha/';
+
+
+
+        // πχ. allCountries['GRE'] = { code2: "GR", name: "Greece"}, ή κάτι παρόμοιο 
+
+        // Εδώ μπορείτε να βάλετε τον κώδικα για όλο το παιχνίδι
+        // Μπορείτε γράψετε κλάσεις που να έχουν κάποια συμπεριφορά, 
+        // π.χ. Game, PlayingCountry, Neighbour, ...
+        // ή να και ακολουθήσετε άλλη τακτική, που να σας είναι πιο προσιτή
+
+
+
+
+
+
+
+        
+        document.addEventListener("DOMContentLoaded", () => {
+            const neighboursPanel = document.querySelector("#neighbours-panel")
+            const myCountryFlag = document.querySelector("#my-country-flag")
+            const myCountryName = document.querySelector("#my-country-name")
+            const progress = document.querySelector("#progress")
+            const round = document.querySelector("#round")
+            const score = document.querySelector("#score")
+            
+            class Game{
+                constructor(){
+                    var _self = this;
+                    this.allCountries = Array.from(countryObjects);
+                    this.playingCountry;
+                    this.borderCountries = new Array()
+                    this.choices = new Array()
+                    this.round = 0
+                    this.score = 0
+                    this.Corrects = 0
+                    this.Wrongs = 0
+                    round.innerText = this.round 
+                    score.innerText = this.score  
+                    this.nextRound() 
+                }
+
+                getRandomCountry() {
+                    let randomCountry = this.allCountries[Math.floor(Math.random() * (this.allCountries.length - 0) + 0)]
+                    this.allCountries.pop(randomCountry)
+                    return randomCountry
+                }
+
+                addCorrect(){
+                    this.Corrects+=1
+                    this.score+=5
+                    score.innerText=this.score
+                }
+
+                addWrong(){
+                    this.Wrongs+=1
+                    this.score-=3
+                    score.innerText=this.score
+                }
+                addRound(){
+                    this.round+=1
+                }
+
+                resetRound(){
+                    this.allCountries= Array.from(countryObjects);
+                    this.borderCountries.splice(0, this.borderCountries.length)
+                    this.Corrects = 0
+                    this.Wrongs = 0
+
+                }
+
+                calculateChoices(borderCountriesNames){
+                    for (let b of borderCountriesNames){
+                        this.borderCountries.push(this.allCountries.find(c => c.code3.startsWith(b)))
+                    }
+
+
+                    this.borderCountries.forEach(country => {
+                        this.allCountries = this.allCountries.filter((c) => c!==country)
+                        this.choices.push(country)
+                    })
+
+                    for(let i=0; i<this.borderCountries.length*3; i++){
+                        this.choices.push(this.getRandomCountry())
+                    }
+                    progress.max = this.borderCountries.length
+                    this.choices = shuffleArray(this.choices)
+
+                }
+
+                drawChoices(borderCountriesNames){
+
+                    this.calculateChoices(borderCountriesNames)
+
+
+                    this.choices.forEach((c) => {
+                        let div = document.createElement("div");
+                        div.classList.add("neighbour")
+                        div.innerHTML = "<span id='choice-country-flag'>"+country2emoji2(c.code)+"</span><br>" + "<span id='choice-country-name'>"+c.name+"</span>"
+
+                        div.addEventListener('click', (e) => {
+                            let that = this;
+                            this.checkValidOption(e, that)
+                        })
+                        
+                        neighboursPanel.appendChild(div)
+                    })
+                }
+
+                nextRound(){
+                    progress.value = 0
+                    progress.max = 0
+                    this.choices = Array.from(document.querySelectorAll(".neighbour"))
+                    this.choices.forEach(choice =>{
+                        choice.remove()
+                    })
+                    this.choices.splice(0, this.choices.length)
+
+
+                    this.playingCountry = this.getRandomCountry()
+                    this.allCountries.pop(this.playingCountry)
+
+                    this.addRound()
+                    round.innerText = this.round
+
+                    this.findBorders()
+                    myCountryFlag.innerHTML = country2emoji2(this.playingCountry.code)
+                    myCountryName.innerHTML = this.playingCountry.name
+                }
+
+                findBorders(){
+                    const filteredcountries = [];
+                    return fetch(urlCode + this.playingCountry.code)
+                        .then(response => {
+                            if(response.status === 200){
+                                return response.json()
+                            }else{
+                                throw new Error(response.status)
+                            }
+                        })
+                        .then(response =>{
+                            if(response.length<1){
+                                throw new Error('country not found')
+                            }else{
+                                if (!response.borders){
+                                    this.round-=1
+                                    this.nextRound()
+                                }else{
+                                    console.log(this.playingCountry)
+                                    console.log(response.borders)
+                                    progress.max = response.borders.length
+                                    this.drawChoices(response.borders)
+                                }
+                                
+                            }
+                        })
+                }
+
+                checkValidOption(event, instance){
+                    if (!event.currentTarget.classList.contains("was-clicked")){
+                        event.currentTarget.classList.add("was-clicked")
+                        
+                        if(instance.borderCountries.find(country => 
+                        country.name.startsWith(event.currentTarget.lastElementChild.innerText))){
+                            event.currentTarget.classList.add("neighbour-is-valid")
+                            progress.value+=1
+                            instance.addCorrect()
+                            
+                        }else{
+                            event.currentTarget.classList.add("neighbour-is-invalid")
+                            instance
+                            instance.addWrong()
+                        }
+                        
+                        if(instance.checkRound(instance.Wrongs, instance.borderCountries.length, instance.Corrects)){
+                            instance.resetRound()
+                        }
+
+   
+                    }
+                }
+
+
+                checkRound(wrongs, numberOfBorders, corrects){
+                    if(progress.value == progress.max && corrects==numberOfBorders){
+                        showNextRoundPanel({text:"Τους βρήκατε όλους", color:[0, 128, 0, 0.4]})
+                        return true
+                    }
+                    if(wrongs==numberOfBorders){
+                        showNextRoundPanel({text:"Κρίμα, χάσατε", color:[255, 0, 0, 0.4]})
+                        return true
+                    }
+                    return false
+                }
+
+            }//end class game
+
+            function showNextRoundPanel(message){
+                document.querySelector("#next-round-panel").lastElementChild.innerText=message.text
+                document.querySelector("#next-round-panel").style.backgroundColor='rgba('+ message.color.join(',') +')'
+                document.querySelector("#next-round-panel").style.display = "inline-block"
+                document.querySelector("#btn-next-round").disabled = false
+
+            }
+
+            function hideNextRoundPanel(){
+                document.querySelector("#next-round-panel").style.display = "none"
+                document.querySelector("#btn-next-round").disabled = true
+            }
+
+            //event listener to new game button
+            document.querySelector("#btn-new-game").addEventListener("click", () => {
+                
+                if (round.innerHTML>0){
+                    if (window.confirm("θέλεις σίγουρα να ξεκινήσεις νέο παιχνίδι; Προσοχή όλα τα δεδομένα θα χαθούν")) {
+                        window.game = undefined
+                        window.game = new Game()
+                    }
+                }else{
+                    window.game = new Game()
+                }
+                hideNextRoundPanel()
+                
+            })
+
+            //event listener to next round button
+            document.querySelector("#btn-next-round").addEventListener("click", () => {
+                hideNextRoundPanel()
+                game.nextRound()
+            })
+
+        });// end of DOMContentLoaded
+    </script>
+</head>
+
+<body>
+    <div class="game-panel">
+        <div id="sidebar">
+            <div>
+                <h2>Βρες τους γείτονες</h2>
+                <p>Γύρος: <span id="round">0</span></p>
+                <p>Σκόρ: <span id="score">0</span></p>
+            </div>
+            <div>
+                <button id="btn-next-round" name ="btn-next-round" disabled>Επόμενη Χώρα</button>
+                <button id="btn-new-game">Νεο παιχνίδι</button>
+            </div>
+        </div>
+
+        <div id="my-country">
+            <span id="my-country-flag"></span>
+            <span id="my-country-name"></span>
+        </div>
+
+        <progress id="progress" value="0">
+
+        </progress>
+        
+        <div id="board">
+            <div id="neighbours-panel">
+                
+            </div>
+            <div id="next-round-panel"><p></p></div>
+        </div>
+
+    </div>
+
+</body>
+<script>
+    //Το παρακάτω αφορά μόνο τους χρήστες macOS.
+    if (navigator.appVersion.indexOf("Macintosh") > 0) {
+        document.body.style.fontFamily = '"Open Sans"';
+    }
+</script>
+
+</html>

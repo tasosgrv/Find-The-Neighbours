@@ -1,0 +1,208 @@
+/*
+Ενδεικτικοί επιλογείς για τη διαμόρφωση του στυλ
+
+Μπορείτε να προσθέσετε τις δηλώσεις στους παρακάτω κανόνες και να εμπλουτίσετε με δικούς σας κανόνες.
+*/
+
+
+/* Χρειάζεται για να φανούν οι σημαίες στους φυλλομετρητές chrome-based από Windows 10 */
+
+@font-face {
+    font-family: 'TwemojiMozilla';
+    src: url('TwemojiMozilla.ttf');
+}
+
+body {
+    margin: 40px;
+    font-family: 'Open Sans', 'TwemojiMozilla';
+    /* Η γραμματοσειρά open sans φορτώνεται στο αρχείο html*/
+    background-color: #fff;
+    color: #444;
+}
+
+.game-panel {
+    display: grid;
+    grid-template-columns: 20% 80%;
+    grid-template-rows: 3fr;
+    gap: 5px;
+
+}
+
+@media (max-width: 900px) {
+    /* ενδεικτικά */
+    /*  ... */
+    .game-panel{
+        display: flex;
+        flex-direction: column;
+    }
+    #sidebar{
+        flex-direction: row;
+    }
+
+    #progress{
+        height: 20px;
+        width: 100%;
+        position: sticky;
+        top: 0;
+    }
+
+    .neighbour{
+        flex-basis: 0px;
+        height: 40px;
+    }
+}
+
+#my-country {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    background-color: #708090;
+    color: white;
+    padding: 15px;
+}
+
+#sidebar {
+    background-color: #ff1493;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 15px;
+    grid-row: 1/4;
+    color: white;
+}
+
+#score {
+    color: white;
+}
+
+#neighbours-panel {
+    display: flex;
+    flex-wrap:wrap;
+    flex-grow: 0px;
+    margin: 0px;
+    justify-content: center;
+    align-items: center;
+    align-content: flex-start;
+    border: 1px solid black;
+    grid-row: 1;
+    grid-column: 1;
+}
+
+.neighbour {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    border-radius: 5px;
+    margin: 2px;
+    flex-basis: 160px;
+    height: 160px;
+}
+.neighbour:hover{
+    box-shadow: rgba(0, 0, 0, 0.25) 0px 0.0625em 0.0625em, rgba(0, 0, 0, 0.25) 0px 0.125em 0.5em, rgba(255, 255, 255, 0.1) 0px 0px 0px 1px inset;
+}
+.neighbour:active{
+    box-shadow: rgb(204, 219, 232) 3px 3px 6px 0px inset, rgba(255, 255, 255, 0.5) -3px -3px 6px 1px inset;
+}
+
+#choice-country-flag{
+    font-size: 4em;
+}
+
+.was-clicked{
+    border: 1px solid black;
+    cursor: not-allowed;
+}
+.was-clicked:hover{
+    box-shadow: none;
+}
+
+.was-clicked.neighbour-is-valid {
+    background-color: #f5f5f5;
+    border: 2px solid  green;
+}
+
+.was-clicked.neighbour-is-invalid {
+    background-color: #f5f5f5;
+    border: 2px solid  #de2a4e;
+}
+
+.neighbour:not(.was-clicked) {
+    background-color: white;
+    cursor: pointer;
+}
+
+#my-country-flag {
+    margin: 15px;
+    font-size: 4em;
+}
+
+#my-country-name {
+    font-size: 2em;
+    text-align: center;
+}
+
+#next-round-panel {
+    background-color: rgba(0, 255, 0, 0.473);
+    text-align: center;
+    font-size: 4em;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    display: none;
+    position: relative;
+    grid-row: 1;
+    grid-column: 1;
+}
+
+#board{
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-row: 3;
+    grid-column: 2;  
+}
+
+
+#progress {
+    border-radius: 5px;
+    height: 20px;
+    z-index: 2;
+    background-color: #e6e6e6;
+    -webkit-appearance: none;
+    grid-row: 2;
+}
+
+
+/* ειδικά για τους φυλλομετρητές που προέρχονται από τον chrome καθώς 
+υποστηρίζουν λιγότερο καλά το στοιχείο progress από ότι ο firefox,
+όσον αφορά το CSS (που και σε αυτόν έχει προβληματική υποστήριξη)
+*/
+
+#progress::-webkit-progress-bar {
+    border-radius: 5px;
+}
+
+button{
+    margin-top: 10px;
+    background-color: white;
+    color: black;   
+    border: 0px;
+    width: 98%;
+    height: 50px;
+    cursor: pointer;
+}
+
+button:hover{
+    box-shadow: rgba(0, 0, 0, 0.19) 0px 10px 20px, rgba(0, 0, 0, 0.23) 0px 6px 6px;
+}
+button:active{
+    box-shadow: rgb(204, 219, 232) 3px 3px 6px 0px inset, rgba(255, 255, 255, 0.5) -3px -3px 6px 1px inset;
+}
+
+button:disabled{
+    background-color: #fcccce;
+    color: grey;
+    box-shadow: none;
+    cursor: not-allowed;
+}
